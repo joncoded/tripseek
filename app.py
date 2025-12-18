@@ -8,9 +8,9 @@ import time
 
 # === PAGE CONFIGURATION ===
 
-app_name = "TRIP SEEK!"
-app_icon = ":airplane:"
-app_icons = ":airplane: :world_map: :mag:"
+app_name = "TRIPSEEK!"
+app_icon = ":world_map:"
+app_icons = ":world_map: :mag:"
 
 st.set_page_config(page_title=app_name, page_icon=app_icon)
 st.title(f"{app_icons} {app_name}")
