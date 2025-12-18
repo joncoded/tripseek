@@ -24,6 +24,7 @@ after a few questions, the AI will process the adjusted recommendations and prov
 ## requirements
 
 - python installed on local machine
+- groq api key
 
 ## setup
 
@@ -31,5 +32,18 @@ in the command line:
 
 ```
 $ pip install -r
+```
+
+on a folder called `.streamlit`, create a file called `secrets.toml` and insert:
+
+```
+GROQ_API_KEY="(your Groq API key)" 
+```
+
+(include the quotation marks!)
+
+then to run:
+
+```
 $ streamlit run app.py
 ```
