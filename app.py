@@ -55,20 +55,20 @@ if not st.session_state.setup_complete:
   st.subheader("About you", divider="red")
 
   # === default
-  # if "name" not in st.session_state:
-  #   st.session_state.name = ""
-  # if "origin" not in st.session_state:
-  #   st.session_state.origin = ""
-  # if "theme_preference" not in st.session_state:
-  #   st.session_state.theme_preference = ""        
+  if "name" not in st.session_state:
+    st.session_state.name = ""
+  if "origin" not in st.session_state:
+    st.session_state.origin = ""
+  if "theme_preference" not in st.session_state:
+    st.session_state.theme_preference = ""        
 
   # === DEBUGGING: default
-  if "name" not in st.session_state:
-    st.session_state.name = "Jon"
-  if "origin" not in st.session_state:
-    st.session_state.origin = "Toronto, Canada"
-  if "theme_preference" not in st.session_state:
-    st.session_state.theme_preference = "sightseeing on a bus" 
+  # if "name" not in st.session_state:
+  #   st.session_state.name = "Jon"
+  # if "origin" not in st.session_state:
+  #   st.session_state.origin = "Toronto, Canada"
+  # if "theme_preference" not in st.session_state:
+  #   st.session_state.theme_preference = "sightseeing on a bus" 
 
   # name input field
   st.session_state.name = st.text_input(label = "Name", 
