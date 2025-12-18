@@ -1,0 +1,3 @@
+groq
+streamlit
+streamlit_js_eval
