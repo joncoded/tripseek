@@ -11,10 +11,11 @@ import time
 app_name = "TRIPSEEK!"
 app_icon = ":world_map:"
 app_icons = ":world_map: :mag:"
+app_tagline = "create a travel itinerary that fits your travel preferences"
 
 st.set_page_config(page_title=app_name, page_icon=app_icon)
-st.title(f"{app_icons} {app_name}")
-st.text(f"create a travel itinerary that fits your travel preferences")
+# st.title(f"{app_icons} {app_name}")
+# st.text(f"create a travel itinerary that fits your travel preferences")
 
 # === APP CONFIGURATION ===
 
@@ -36,12 +37,49 @@ if "messages" not in st.session_state:
 if "chat_complete" not in st.session_state:
   st.session_state.chat_complete = False
 
+if "initial_greeting_generated" not in st.session_state:
+  st.session_state.initial_greeting_generated = False
+
 def complete_setup():
   st.session_state.setup_complete = True
   st.session_state.scroll_to_top = True
 
 def show_summary():
   st.session_state.summary_shown = True
+
+# === UI BEGINS
+
+st.markdown(
+    """
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, h1, h2 { font-family: 'Barlow Semi Condensed' !important; }
+        .stExpander > details > summary > span > span:first-child { display: none; }
+        /* expander button fixes due to streamlit glitch */
+        .stExpander > details > summary > span > div::before { 
+            content: "▼"; display: inline-block; margin-right: 8px; 
+        }          
+        .stExpander > details[open] > summary > span > div::before { 
+            content: "▲"; display: inline-block; margin-right: 8px; 
+        }
+    </style>
+    """,
+    unsafe_allow_html = True
+)
+
+# padding hack
+st.write("<br><br>", unsafe_allow_html = True)
+
+# sticky header hack
+def header(content):
+    st.markdown(f"""
+        <div style="position:fixed; top:60px; left:0; width:100%; background-color:#222; color:#fff; padding:5px; z-index:9999">
+            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                {content}
+            </div>
+        </div>""", unsafe_allow_html = True)
+
+header(f"<h1 style=\"font-size:24px; padding-bottom: 0;\">{"🗺️ " + app_name}</h1><div style=\"font-size:12px; padding-bottom:15px; \">{app_tagline}</div>")
 
 # === SETUP STAGE: collect user detail
 
@@ -55,39 +93,40 @@ if not st.session_state.setup_complete:
   st.subheader("About you", divider="red")
 
   # === default
-  if "name" not in st.session_state:
-    st.session_state.name = ""
   if "origin" not in st.session_state:
     st.session_state.origin = ""
   if "theme_preference" not in st.session_state:
-    st.session_state.theme_preference = ""        
-
-  # === DEBUGGING: default
-  # if "name" not in st.session_state:
-  #   st.session_state.name = "Jon"
-  # if "origin" not in st.session_state:
-  #   st.session_state.origin = "Toronto, Canada"
-  # if "theme_preference" not in st.session_state:
-  #   st.session_state.theme_preference = "sightseeing on a bus" 
-
-  # name input field
-  st.session_state.name = st.text_input(label = "Name", 
-                                        max_chars = 40, 
-                                        placeholder = "Enter your first name or nickname",
-                                        value = st.session_state.name)
+    st.session_state.theme_preference = []        
   
   st.session_state.origin = st.text_input(label = "Where are you travelling from?", 
                                         max_chars = 40, 
                                         placeholder = "Enter your home city and/or country",
                                         value = st.session_state.origin)  
 
-  # travel style dropdown
-  # TODO: make this a multi-select with checkboxes (up to 4 choices)
-  st.session_state.theme_preference = st.selectbox("What is your travel preference?", ("art galleries", "bar hopping", "beachgoing", "exploring", "extreme sports", "hiking", "history and heritage", "kayaking", "live music", "nature", "relaxation at a resort", "road trips", "sightseeing on a bus", "spa days", "sports fandom", "theme parks", "tragedy tourism", "wildlife"), index = 12)
+  # travel style checkboxes for multiple selections
+  st.write("What are your travel preferences? (Select all that apply)")
+  
+  travel_preferences = [
+    "art galleries", "bar hopping", "beachgoing", "exploring", "extreme sports", 
+    "hiking", "history and heritage", "kayaking", "live music", "nature", 
+    "relaxation at a resort", "self-driving road trips", "sightseeing on a bus", "spa days", 
+    "sports fandom", "theme parks", "tragedy tourism", "wildlife"
+  ]
+  
+  # create checkboxes in a grid layout (3 columns)
+  cols = st.columns(3)
+  selected_preferences = []
+  
+  for idx, preference in enumerate(travel_preferences):
+    col_idx = idx % 3
+    with cols[col_idx]:
+      if st.checkbox(preference, key=f"pref_{preference}", value=preference in st.session_state.theme_preference):
+        selected_preferences.append(preference)
+  
+  st.session_state.theme_preference = selected_preferences
 
   # === about the trip
 
-  # ==== PRODUCTION: default
   if "travel_selected_region" not in st.session_state:
     st.session_state.travel_selected_region = "Anywhere"
   if "travel_destination" not in st.session_state:
@@ -97,20 +136,9 @@ if not st.session_state.setup_complete:
   if "travel_notes" not in st.session_state:
     st.session_state.travel_notes = ""
 
-  # # === DEBUGGING: default (pre-filled)
-  # if "travel_selected_region" not in st.session_state:
-  #   st.session_state.travel_selected_region = "Oceania"
-  # if "travel_destination" not in st.session_state:
-  #   st.session_state.travel_destination = "Australia"
-  # if "travel_destination_specific" not in st.session_state:
-  #   st.session_state.travel_destination_specific = "Sydney and Melbourne"
-  # if "travel_notes" not in st.session_state:
-  #   st.session_state.travel_notes = "Going in November 2026"
-
   st.subheader("About your trip", divider="blue")
 
   # travel destination dropdown split into region and country
-  # Define regions and their countries
   destinations = {
     "Anywhere": ["Anywhere"],
     "East Asia": ["China", "Hong Kong", "Macao", "Japan", "South Korea", "Taiwan"],
@@ -185,19 +213,6 @@ if not st.session_state.setup_complete:
   # any other notes
   st.session_state.travel_notes = st.text_area(label = "Any other notes or preferences for your trip?", value = st.session_state.travel_notes, height = 100)
 
-  # === DEBUGGING: outputs
-  # st.write(f"**Your information**:")
-  # st.write(f"**name**:\n{st.session_state.name}")
-  # st.write(f"**theme_preference**:\n{st.session_state.theme_preference}")
-  # st.write(f"**travel_destination**:\n{st.session_state.travel_destination}")
-  # st.write(f"**travel_destination_specific**:\n{st.session_state.travel_destination_specific}")
-  # st.write(f"**travel_length**:\n{st.session_state.trip_length}")
-  # st.write(f"**travel_budget**:\n{st.session_state.trip_budget}")
-  # st.write(f"**trip_party_adults**:\n{st.session_state.trip_party_adults}")
-  # st.write(f"**trip_party_children**:\n{st.session_state.trip_party_children}")
-  # st.write(f"**visited_before**:\n{st.session_state.visited_before}")
-  # st.write(f"**travel_notes**:\n{st.session_state.travel_notes}")
-
   # finalize application information
   if st.button("Start the chat!", on_click=complete_setup):    
     st.write("Survey complete! You can now start the chat!")
@@ -230,21 +245,31 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
 
   # keeps track of conversation as it evolves (starting the "conversation" from scratch,
   # with the exception of a system message to set behavior)
-  if not st.session_state.messages:
-    st.session_state.messages = [{  
-      "role": "system", 
-      "content": f'''
-        You are a travel agent discussing travel plans with a prospective client named {st.session_state.name} from {st.session_state.origin} who prefers {st.session_state.theme_preference} and wants to visit {st.session_state.travel_destination} but with a preference for {st.session_state.travel_destination_specific}. The travel party consists of '{st.session_state.trip_adults}' adults and '{st.session_state.trip_children}' children. They have a budget of US$ '{st.session_state.trip_budget}' for a trip lasting '{st.session_state.trip_length}' days. {st.session_state.visited_before_text} 
+  if not st.session_state.initial_greeting_generated:
 
-        The traveller also had this to say: {st.session_state.travel_notes}
-                
-        At the very beginning, have a friendly chat with them outlining any specific attractions that fit their travel style of {st.session_state.theme_preference} that include this party of {st.session_state.trip_adults} adults and {st.session_state.trip_children} children. Make sure to allow for travel time if they have stated their place of origin.
-        
-        Ask them questions, one at a time, to clarify the interests and needs that they have already provided. If no need to clarify, then ask them if they have any other concerns. In each message, prompt the traveller to provide more information about their preferences and interests. 
+    # format theme preferences as comma-separated string
+    theme_prefs_text = ", ".join(st.session_state.theme_preference) if st.session_state.theme_preference else "general travel"
+    
+    st.session_state.messages = [
+      {  
+        "role": "system", 
+        "content": f'''
+          You are a travel agent discussing travel plans with a prospective client from {st.session_state.origin} who prefers {theme_prefs_text} and wants to visit {st.session_state.travel_destination} but with preferences towards {theme_prefs_text}. The travel party consists of '{st.session_state.trip_adults}' adults and '{st.session_state.trip_children}' children. They have a budget of US$ '{st.session_state.trip_budget}' for a trip lasting '{st.session_state.trip_length}' days. {st.session_state.visited_before_text} 
 
-        After 5 messages from the traveller, provide a summary of a travel plan that fits their preferences. Make sure to highlight how the plan fits their travel style and budget. Do not ask them again for any information that was already provided. Do not use any HTML in the output. Try to use sentence case for any headings. Try to keep the output within the maximum amount of tokens.
-      '''
-    }]
+          The traveller also had this to say: {st.session_state.travel_notes}
+                  
+          At the very beginning, have a friendly chat with them outlining any specific attractions that fit their travel style of {theme_prefs_text} that include this party of {st.session_state.trip_adults} adults and {st.session_state.trip_children} children. Make sure to allow for travel time if they have stated their place of origin.
+          
+          Ask them questions, one at a time, to clarify the interests and needs that they have already provided. If no need to clarify, then ask them if they have any other concerns. In each message, prompt the traveller to provide more information about their preferences and interests. 
+
+          After 5 messages from the traveller, provide a summary of a travel plan that fits their preferences. Make sure to highlight how the plan fits their travel style and budget. Do not ask them again for any information that was already provided. Do not use any HTML in the output. Try to use sentence case for any headings. Try to keep the output within the maximum amount of tokens.
+        '''
+      },
+      {
+        "role": "user",
+        "content": "Hi"
+      }
+    ]
     
     # generate initial greeting from the assistant
     initial_greeting_stream = client.chat.completions.create(
@@ -252,8 +277,7 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
       messages = st.session_state.messages,
       stream = True,
       response_format = { "type" : "text" },
-      max_tokens = 300,
-      tool_choice = "none"
+      max_tokens = 300
     )
     
     # collect the greeting (don't display yet - it will show in MESSAGE HISTORY)
@@ -266,14 +290,26 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
     greeting = "".join(greeting_parts)
     if greeting:
       st.session_state.messages.append({"role": "assistant", "content": greeting})
-      st.session_state.scroll_to_top = True
+    else:
+      # fallback greeting if API fails
+      st.session_state.messages.append({"role": "assistant", "content": "Hello! I'm excited to help you plan your trip. Let me know if you have any questions!"})
+    
+    st.session_state.user_message_count = 1
+    st.session_state.initial_greeting_generated = True
+    st.session_state.scroll_to_top = True
+    # rerun to display the greeting
+    st.rerun()  
 
   # === MESSAGE HISTORY : display all messages so far
   for message in st.session_state.messages:
     if message["role"] != "system":
-      with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
+      if message["role"] == "user":
+        with st.chat_message(name = "User", avatar = "❓"):
+          st.markdown(message["content"])
+      else:
+        with st.chat_message(name = "AI", avatar = "🗺️"):
+          st.markdown(message["content"])
+    
   # === USER MESSAGE INPUT : user types here and proceeds with the branch if there is input
   if st.session_state.user_message_count < max_messages:
 
@@ -285,11 +321,11 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
       if st.session_state.user_message_count < max_messages:
 
         # display user message in message history with markdown formatted
-        with st.chat_message("user"):
+        with st.chat_message(name = "User", avatar = "❓"):
           st.markdown(prompt)
 
         # display assistant response in message history
-        with st.chat_message("assistant"):
+        with st.chat_message(name = "AI", avatar = "🗺️"):
           
           with st.spinner("Thinking..."):
             # stream the response from the LLM as it arrives
@@ -301,8 +337,7 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
               ],
               stream = True,
               response_format = { "type" : "text" },
-              max_tokens = 5000,
-              tool_choice = "none"
+              max_tokens = 5000
             )
 
             # get the response back - extract text content from stream chunks
@@ -322,8 +357,9 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
 
         # add the response to the message history ("conversation")
         # ensure we always have a valid string (at least empty string, not None)
+        # use a single space if empty to satisfy API requirements
         if not response:
-          response = " "  # Use a single space if empty to satisfy API requirements
+          response = " "  
         st.session_state.messages.append({"role": "assistant", "content": response})
       
       st.session_state.user_message_count += 1
