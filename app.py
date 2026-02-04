@@ -277,7 +277,7 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
       messages = st.session_state.messages,
       stream = True,
       response_format = { "type" : "text" },
-      max_tokens = 300
+      max_tokens = 500
     )
     
     # collect the greeting (don't display yet - it will show in MESSAGE HISTORY)
