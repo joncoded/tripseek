@@ -404,5 +404,6 @@ if st.session_state.summary_shown:
 
   st.markdown(summary_completion.choices[0].message.content)
 
+if st.session_state.setup_complete:
   if st.button("restart chat", type="primary"):
     streamlit_js_eval(js_expressions="parent.window.location.reload()")
