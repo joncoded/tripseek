@@ -313,7 +313,7 @@ if st.session_state.setup_complete and not st.session_state.summary_shown and no
   # === USER MESSAGE INPUT : user types here and proceeds with the branch if there is input
   if st.session_state.user_message_count < max_messages:
 
-    if prompt := st.chat_input(f"Welcome to Trip Seek! Type your message!", max_chars = 300):
+    if prompt := st.chat_input(f"Ask a question but please trust but verify the responses!", max_chars = 300):
         
       # what the user wrote
       st.session_state.messages.append({"role": "user", "content": prompt})
